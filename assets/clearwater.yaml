@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homer
+  namespace: clearwater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homer
+  template:
+    metadata:
+      labels:
+        app: homer
+    spec:
+      containers:
+      - name: homer
+        image: busybox
+        args: [sh, -c, 'sleep 999999999']
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ralf
+  namespace: clearwater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ralf
+  template:
+    metadata:
+      labels:
+        app: ralf
+    spec:
+      containers:
+      - name: ralf
+        image: busybox
+        args: [sh, -c, 'sleep 999999999']
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diameter
+  namespace: clearwater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: diameter
+  template:
+    metadata:
+      labels:
+        app: diameter
+    spec:
+      containers:
+      - name: diameter
+        image: busybox
+        args: [sh, -c, 'sleep 999999999']
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vellum
+  namespace: clearwater
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vellum
+  template:
+    metadata:
+      labels:
+        app: vellum
+    spec:
+      containers:
+      - name: vellum
+        image: busybox
+        args: [sh, -c, 'sleep 999999999']
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sprout-cluster-operator
+  namespace: clearwater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: sprout-cluster-operator
+  template:
+    metadata:
+      labels:
+        name: sprout-cluster-operator
+    spec:
+      containers:
+      - name: sprout-cluster-operator
+        image: localhost:5000/clearwater-sprout-cluster-operator:0.1
+        command:
+        - clearwater-sprout-cluster-operator
+        imagePullPolicy: Always
+        env:
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+---
+apiVersion: projectclearwater.org/v1
+kind: SproutCluster
+metadata:
+  name: sprout-cluster
+  namespace: clearwater
+spec:
+  shards: 2
+  scale: 3

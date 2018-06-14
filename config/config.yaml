@@ -1,0 +1,3 @@
+apiVersion: projectclearwater.org/v1
+kind: SproutCluster
+projectName: clearwater-sprout-cluster-operator

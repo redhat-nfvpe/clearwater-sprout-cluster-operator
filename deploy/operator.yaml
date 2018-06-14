@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clearwater-sprout-cluster-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: clearwater-sprout-cluster-operator
+  template:
+    metadata:
+      labels:
+        name: clearwater-sprout-cluster-operator
+    spec:
+      containers:
+        - name: clearwater-sprout-cluster-operator
+          image: localhost:5000/clearwater-sprout-cluster-operator:0.1
+          command:
+          - clearwater-sprout-cluster-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace

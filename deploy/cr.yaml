@@ -1,0 +1,7 @@
+apiVersion: projectclearwater.org/v1
+kind: SproutCluster
+metadata:
+  name: sproutCluster
+spec:
+  shards: 2
+  scale: 3

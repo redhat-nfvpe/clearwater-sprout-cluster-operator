@@ -1,0 +1,102 @@
+# https://gist.github.com/coco98/b750b3debc6d517308596c248daf3bb1
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-registry
+  namespace: kube-system
+  labels:
+    k8s-app: kube-registry
+spec:
+  # This will select either the proxy or the actual registry
+  # (both are good!)
+  selector:
+    k8s-app: kube-registry
+  ports:
+  - name: registry
+    port: 5000
+    protocol: TCP
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kube-registry
+  namespace: kube-system
+  labels:
+    k8s-app: kube-registry
+    role: registry
+spec:
+  replicas: 1
+  selector:
+    k8s-app: kube-registry
+    role: registry
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-registry
+        role: registry
+    spec:
+      containers:
+      - name: registry
+        image: registry:2.5.1
+        resources:
+          # if requests=limits then this container will be in the guaranteed class
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: REGISTRY_HTTP_ADDR
+          value: :5000
+        - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+          value: /var/lib/registry
+        volumeMounts:
+        - name: image-store
+          mountPath: /var/lib/registry
+        ports:
+        - containerPort: 5000
+          name: registry
+          protocol: TCP
+      volumes:
+      - name: image-store
+        hostPath:
+          path: /data/registry/
+---
+# All nodes in the cluster will have a kube-registry-proxy pod running at port 5000
+# So that all pods on that node can access it
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kube-registry-proxy
+  namespace: kube-system
+  labels:
+    k8s-app: kube-registry
+    role: proxy
+    # Deprecated annotation
+    # https://kubernetes-v1-4.github.io/docs/user-guide/kubectl/kubectl_cluster-info/
+    kubernetes.io/cluster-service: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-registry
+        role: proxy
+    spec:
+      containers:
+      - name: kube-registry-proxy
+        image: gcr.io/google_containers/kube-registry-proxy:0.4
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+        env:
+        - name: REGISTRY_HOST
+          value: kube-registry.kube-system.svc.cluster.local
+        - name: REGISTRY_PORT
+          value: "5000"
+        ports:
+        - name: registry
+          containerPort: 80
+          hostPort: 5000
