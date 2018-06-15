@@ -22,11 +22,11 @@ type SproutCluster struct {
 }
 
 type SproutClusterSpec struct {
-	Shards int `json:"shards"`
-	Scale int `json:"scale"`
+	Shards int32 `json:"shards"`
+	Scale int32 `json:"scale"`
 }
 
 type SproutClusterStatus struct {
-	SproutNodes []string `json:"sproutNodes"`
+	ShardNodes []string `json:"shardNodes"`
 	BonoNodes []string `json:"bonoNodes"`
 }
